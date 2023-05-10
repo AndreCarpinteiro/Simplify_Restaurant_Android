@@ -1,16 +1,73 @@
 package com.example.simplifyrestaurant;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+
+import java.util.Map;
 
 public class EcraPrincipal extends AppCompatActivity {
+
+    private TextView nomeUtilizador, emailUtlizador;
+    private Button btn_sair;
+    FirebaseDatabase db = FirebaseDatabase.getInstance();
+    String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ecra_principal);
-
+        IniciarComponentes();
         //getSupportActionBar().hide();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("ListaClientes").child(userId);
+        Log.d("TAG", "Entrou 0");
+        System.out.println("Mensagem de depuração");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
+                    if(map != null && map.containsKey("Nome")){
+                        String nome = (String) map.get("Nome") + map.get("Apelido");
+                        nomeUtilizador.setText(nome);
+                        emailUtlizador.setText(email);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("TAG", "Erro ao procurar utilizador");
+            }
+        });
+    }
+
+    private void IniciarComponentes(){
+        nomeUtilizador = findViewById(R.id.textNomeUtilizador);
+        emailUtlizador = findViewById(R.id.textEmailUtilizador);
+        btn_sair = findViewById(R.id.btn_sair);
     }
 }

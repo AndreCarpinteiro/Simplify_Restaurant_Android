@@ -43,8 +43,8 @@
         android:id="@+id/textNomeUtilizador"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="dsfsf"
-        android:textColor="@color/black"
+        android:text=""
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginTop="40dp"
@@ -68,8 +68,8 @@
         android:id="@+id/textEmailUtilizador"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="sdvsdv"
-        android:textColor="@color/black"
+        android:text=""
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginTop="40dp"
@@ -79,6 +79,7 @@
         />
 
     <Button
+        android:id="@+id/btn_sair"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/textEmailUtilizador"
