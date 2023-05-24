@@ -3,8 +3,10 @@ package com.example.simplifyrestaurant;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -23,7 +25,7 @@ import java.util.Map;
 public class EcraPrincipal extends AppCompatActivity {
 
     private TextView nomeUtilizador, emailUtlizador;
-    private Button btn_sair;
+    private Button btn_sair, btn_reserva, btn_pedido;
     FirebaseDatabase db = FirebaseDatabase.getInstance();
     String userId;
 
@@ -33,7 +35,26 @@ public class EcraPrincipal extends AppCompatActivity {
         setContentView(R.layout.activity_ecra_principal);
         IniciarComponentes();
         //getSupportActionBar().hide();
+
+        btn_reserva.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EcraPrincipal.this, Reserva.class);//depois de logout reencaminhar para ecrã login
+                startActivity(intent);
+            }
+        });
+        btn_sair.setOnClickListener(new View.OnClickListener() { //logOut da app
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(EcraPrincipal.this, LoginActivity.class);//depois de logout reencaminhar para ecrã login
+                startActivity(intent);
+                finish();
+            }
+        });
     }
+
+
 
     @Override
     protected void onStart() {
@@ -43,8 +64,6 @@ public class EcraPrincipal extends AppCompatActivity {
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("ListaClientes").child(userId);
-        Log.d("TAG", "Entrou 0");
-        System.out.println("Mensagem de depuração");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -69,5 +88,7 @@ public class EcraPrincipal extends AppCompatActivity {
         nomeUtilizador = findViewById(R.id.textNomeUtilizador);
         emailUtlizador = findViewById(R.id.textEmailUtilizador);
         btn_sair = findViewById(R.id.btn_sair);
+        btn_reserva = findViewById(R.id.btn_reservar);
+        btn_pedido = findViewById(R.id.btn_pedido);
     }
 }

@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-  /*  @Override
+    @Override
     protected void onStart() { //Ciclo de vida da app
         super.onStart();
         FirebaseUser utilizadoratual = FirebaseAuth.getInstance().getCurrentUser();
@@ -103,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
         if(utilizadoratual != null){
             EcraPrincipal();
         }
-    }*/
+    }
 
     private void EcraPrincipal(){
         Intent intent = new Intent(LoginActivity.this, EcraPrincipal.class);

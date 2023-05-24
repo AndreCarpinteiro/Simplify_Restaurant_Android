@@ -13,6 +13,12 @@
         android:theme="@style/Theme.SimplifyRestaurant"
         tools:targetApi="31">
         <activity
+            android:name=".Pedido"
+            android:exported="false" />
+        <activity
+            android:name=".Reserva"
+            android:exported="false" />
+        <activity
             android:name=".EcraPrincipal"
             android:exported="false" />
         <activity

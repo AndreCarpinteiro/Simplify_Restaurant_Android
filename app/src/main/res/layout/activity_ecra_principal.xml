@@ -79,10 +79,38 @@
         />
 
     <Button
-        android:id="@+id/btn_sair"
+        android:id="@+id/btn_reservar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/textEmailUtilizador"
+        android:text="Reservar Mesa"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/black"
+        android:padding="20dp"
+        android:layout_margin="20dp"
+        />
+
+    <Button
+        android:id="@+id/btn_pedido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/btn_reservar"
+        android:text="Realizar pedido"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/black"
+        android:padding="20dp"
+        android:layout_margin="20dp"
+        />
+
+    <Button
+        android:id="@+id/btn_sair"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/btn_pedido"
         android:text="Sair"
         android:textSize="18sp"
         android:textStyle="bold"
