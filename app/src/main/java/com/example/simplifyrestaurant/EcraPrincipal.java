@@ -39,7 +39,7 @@ public class EcraPrincipal extends AppCompatActivity {
         btn_reserva.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(EcraPrincipal.this, Reserva.class);//depois de logout reencaminhar para ecrã login
+                Intent intent = new Intent(EcraPrincipal.this, Reserva.class);//encaminhar para a atividade da reserva
                 startActivity(intent);
             }
         });
@@ -50,6 +50,14 @@ public class EcraPrincipal extends AppCompatActivity {
                 Intent intent = new Intent(EcraPrincipal.this, LoginActivity.class);//depois de logout reencaminhar para ecrã login
                 startActivity(intent);
                 finish();
+            }
+        });
+
+        btn_pedido.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EcraPrincipal.this, Pedido.class);//encaminhar para a atividade do pedido
+                startActivity(intent);
             }
         });
     }

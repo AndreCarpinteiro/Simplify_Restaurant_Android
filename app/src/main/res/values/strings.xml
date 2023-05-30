@@ -4,6 +4,7 @@
     <string name="text_registar">Criar conta</string>
     <string name="title_registo">Crie uma conta</string>
     <string name="title_reserva">Criar reserva</string>
+    <string name="title_pedido">Pedido</string>
     <string-array name="opcoes">
         <item>12:00</item>
         <item>13:00</item>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="350dp"
+    android:layout_height="500dp"
+    android:layout_gravity="center"
+    android:background="@drawable/cerclebackground">
+
+    <ImageView
+        android:id="@+id/imgComida"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+    />
+
+    <TextView
+        android:id="@+id/popnome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="...."
+        android:textSize="24sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:layout_below="@id/imgComida"
+        />
+
+
+    <TextView
+        android:id="@+id/popdescricao"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="...."
+        android:textSize="20sp"
+        android:layout_below="@id/popnome"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:layout_marginRight="22dp"
+        android:layout_marginLeft="22dp"
+        />
+
+    <TextView
+        android:id="@+id/poppreco"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:textSize="20sp"
+        android:layout_below="@id/popdescricao"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:layout_marginRight="22dp"
+        android:layout_marginLeft="22dp"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/poppreco"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp">
+
+        <Button
+            android:id="@+id/btnMinus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textColor="@color/black"
+            android:background="@android:color/transparent"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:onClick="decrement"/>
+
+        <TextView
+            android:id="@+id/textQuantity"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="0"
+            android:textSize="18sp"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:background="@drawable/quantity_background"
+            />
+
+        <Button
+            android:id="@+id/btnPlus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+"
+            android:textColor="@color/black"
+            android:background="@android:color/transparent"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:onClick="increment"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonConfirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirmar"
+        android:textSize="20sp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_background"
+        />
+</RelativeLayout>
