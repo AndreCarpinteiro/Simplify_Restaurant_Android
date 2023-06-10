@@ -49,11 +49,14 @@ public class Pedido extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference("Produtos");
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        Button btnFinalizar = findViewById(R.id.btnFinalizar);
         list = new ArrayList<>();
-        myAdapter = new MyAdapter(this,list);
+        myAdapter = new MyAdapter(this,list, btnFinalizar, Pedido.this);
         recyclerView.setAdapter(myAdapter);
         searchEditText = findViewById(R.id.searchEditText);
+
+       // myAdapter.setBtnFinalizar(btnFinalizar);
+
 
        /* LayoutInflater inflater = LayoutInflater.from(this);
         View layout = inflater.inflate(R.layout.item, null);

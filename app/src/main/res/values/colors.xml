@@ -8,8 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="orange">#FFB344</color>
-    <color name="pink">#FB528B</color>
-    <color name="pink_light">#F899B9</color>
+    <color name="pink">#2F4F4F</color>
+    <color name="pink_light">#5F9EA0</color>
     <color name="lavender">#8692f7</color>
     <color name="colorPrimary">#2196F3</color>
+    <color name="amarelomanhoso">#BDB76B</color>
+    <color name="amarelo">#DAA520</color>
 </resources>

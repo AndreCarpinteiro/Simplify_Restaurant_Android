@@ -1,23 +1,34 @@
 package com.example.simplifyrestaurant;
 
+import java.util.Date;
+
 public class Item {
     private String Categoria;
     private String Descricao;
     private String Img;
     private String Nome;
     private String Preco;
-    private int quantity; // Novo atributo para controlar a quantidade
+    private String User;
+    private Date Data;
+    private int Quantidade;
 
     public Item() {
         // Construtor sem argumentos necessário para o Firebase Database
     }
 
     public int getQuantidade() {
-        return quantity;
+        return Quantidade;
+    }
+
+    public Date getData(){
+        return Data;
+    }
+    public String getUser() {
+        return User;
     }
 
     public void setQuantidade(int quantidade) {
-        this.quantity = quantidade;
+        this.Quantidade = quantidade;
     }
     public String getCategoria() {
         return Categoria;
@@ -37,13 +48,5 @@ public class Item {
 
     public String getPreco() {
         return Preco;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
     }
 }

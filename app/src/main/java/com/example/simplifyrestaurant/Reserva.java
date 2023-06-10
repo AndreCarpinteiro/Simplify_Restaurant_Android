@@ -87,7 +87,7 @@ public class Reserva extends AppCompatActivity {
                     }
                 }, year, month, day);
 
-                // Defina a data mínima como a data atual
+                // Define a data mínima como a data atual
                 datePickerDialog.getDatePicker().setMinDate(calendar.getTimeInMillis());
 
                 datePickerDialog.show();
@@ -140,6 +140,74 @@ public class Reserva extends AppCompatActivity {
                     cxMsg3.show();
                     return;
                 }
+
+                SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                Date dataFinal2;
+                try {
+                    dataFinal2 = sdf2.parse(datafinal);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+// Criar uma instância de SimpleDateFormat para obter apenas a data
+                SimpleDateFormat sdfData = new SimpleDateFormat("dd/MM/yyyy");
+
+// Extrair apenas a parte da data de dataFinal
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String data = sdfData.format(dataFinal);
+
+                DatabaseReference databaseReference3 = FirebaseDatabase.getInstance().getReference("Reservas");
+                Query query3 = databaseReference3.orderByChild("DataReserva");
+
+                query3.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        int numReservas = 0;
+                        idMesasCReservaDataEscolhida.clear();
+                        Log.d("DEBUG", "DataSnapshot exists: " + dataSnapshot.exists());
+                        Log.d("DEBUG", "Data: " + data);
+
+                        if (dataSnapshot.exists()) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                String dataReserva = snapshot.child("DataReserva").getValue(String.class);
+
+                                if (dataReserva != null) {
+                                    try {
+                                        // Formatar a data da reserva sem a hora
+                                        Date dataReservaFormatada = dateFormat.parse(dataReserva);
+                                        Date dataFinalFormatada = dateFormat.parse(datafinal);
+
+                                        // Comparar apenas as datas
+                                        if (dataReservaFormatada.equals(dataFinalFormatada)) {
+                                            numReservas++;
+                                        }
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+
+                            if (numReservas < 2) {
+                                // Faça o restante do seu código para realizar a reserva
+                            } else {
+                                AlertDialog.Builder cxMsg = createDialogWithMessage("Número máximo de reservas atingido para o dia selecionado");
+                                cxMsg.show();
+                            }
+                        } else {
+                            // Nenhuma reserva encontrada para o dia selecionado
+                            // Faça o restante do seu código para realizar a reserva
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+
+
                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Reservas");
                     Query query = databaseReference.orderByChild("DataReserva").equalTo(datafinal);
                     query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -165,8 +233,9 @@ public class Reserva extends AppCompatActivity {
                             } else {
                                 System.out.println("Nenhuma reserva encontrada para a data selecionada"); //Msg teste
                             }
-                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Mesas");
-                            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+
+                            DatabaseReference databaseReference4 = FirebaseDatabase.getInstance().getReference("Mesas");
+                            databaseReference4.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {

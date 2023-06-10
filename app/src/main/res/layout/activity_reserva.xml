@@ -49,6 +49,7 @@
         android:layout_marginTop="20dp"
         android:hint="Selecionar data"
         android:textSize="30sp"
+        android:focusableInTouchMode="false"
         app:layout_constraintTop_toBottomOf="@id/text_qtdPessoas"
         app:layout_constraintStart_toStartOf="@id/containerComponents"
         app:layout_constraintEnd_toEndOf="@id/containerComponents"
