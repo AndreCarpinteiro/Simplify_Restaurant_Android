@@ -21,18 +21,23 @@ import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,32 +61,77 @@ public class Pagamento extends AppCompatActivity {
         String UserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Pedidos");
 
-
+        calcularValorTotal();
 
         card1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BuscarPedido();
+                ProcurarPedido();
             }
         });
     }
 
-    private void BuscarPedido() {
+    private void ProcurarPedido() {
 
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference reservasRef = FirebaseDatabase.getInstance().getReference().child("Reservas");
+        Query query = reservasRef.orderByChild("IdCliente").equalTo(userId).limitToFirst(1);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    snapshot.getRef().removeValue()
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                }
+                            });
+                    break; // Remover apenas a primeira reserva (a mais antiga)
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Erro ao acessar o banco de dados
+            }
+        });
+
+        DatabaseReference pedidosRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
+        pedidosRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    ClassePedido pedido = dataSnapshot.getValue(ClassePedido.class);
+                    if (pedido != null && pedido.getUser().equals(userId)) {
+                        dataSnapshot.getRef().removeValue(); // Remove o pedido relacionado ao utilizador
+                    }
+                }
+                generatePdf();
+                openPdf();
+            }
 
-                for (DataSnapshot snapshot2 : snapshot.getChildren()) {
-                    //Pedido pedido = snapshot2.getValue(Pedido.class);
-                    HashMap<String, Object> pedidoItem = new HashMap<>();
-                    pedidoItem.put("Nome", item.getNome());
-                    pedidoItem.put("Quantidade", item.getQuantidade());
-                    pedidoItem.put("Preco", item.getPreco());
-                    //pedidoItem.put("User", UserId);
-                    pedidoItem.put("Categoria", item.getCategoria());
-                    selectedItems.add(pedidoItem);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getApplicationContext(), "Erro ao obter os pedidos do Firebase", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference().child("Items");
+        itemsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Item> itemList = new ArrayList<>();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Item item = dataSnapshot.getValue(Item.class);
+                    if (item != null) {
+                        itemList.add(item);
+                    }
                 }
                 generatePdf();
                 openPdf();
@@ -92,7 +142,6 @@ public class Pagamento extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Erro ao obter os itens do Firebase", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
     private void generatePdf() {
         // Verifica as permissões de armazenamento
@@ -211,5 +260,39 @@ public class Pagamento extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Permissão de armazenamento negada", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void calcularValorTotal() {
+        DatabaseReference pedidosRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        pedidosRef.orderByChild("User").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                double valorTotal = 0.0;
+
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    ClassePedido pedido = dataSnapshot.getValue(ClassePedido.class);
+                    if (pedido != null) {
+                        String precoString = pedido.getPreco();
+                        precoString = precoString.replace(",", ".");
+                        double preco = Double.parseDouble(precoString);
+                        valorTotal += preco;
+                    }
+                }
+
+                // Formata o valor com uma casa decimal a mais
+                DecimalFormat decimalFormat = new DecimalFormat("#0.00");
+                String valorTotalFormatado = decimalFormat.format(valorTotal);
+
+                TextView txtValorTotal = findViewById(R.id.txtValorPagar);
+                txtValorTotal.setText("Valor a pagar: " + valorTotalFormatado + "€");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Tratar erro ao acessar o banco de dados
+            }
+        });
     }
 }

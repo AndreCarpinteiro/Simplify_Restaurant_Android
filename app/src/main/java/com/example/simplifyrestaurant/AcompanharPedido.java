@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,10 +46,10 @@ public class AcompanharPedido extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference("Pedidos");
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         list = new ArrayList<>();
 
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("User").equalTo(userId).addValueEventListener(new ValueEventListener() {//Traz apenas os pedidos do user atual
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 ArrayList<Item> tempList = new ArrayList<>();

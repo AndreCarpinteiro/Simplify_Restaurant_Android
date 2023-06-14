@@ -68,39 +68,59 @@ public class EcraPrincipal extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 DatabaseReference reservaRef = FirebaseDatabase.getInstance().getReference("Reservas");
+                final boolean[] hasReserva = {false};
+                final boolean[] hora = {false};
                 reservaRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            long currentTimeMillis = System.currentTimeMillis();
-                            boolean hasReserva = false;
+                            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                             for (DataSnapshot reservaSnapshot : snapshot.getChildren()) {
-                                String dataReserva = reservaSnapshot.child("DataReserva").getValue(String.class);
+                                String clienteId = reservaSnapshot.child("IdCliente").getValue(String.class);
 
-                                if (dataReserva != null) {
-                                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                                    try {
-                                        Date reservaDate = sdf.parse(dataReserva);
-                                        long reservaTimeMillis = reservaDate.getTime();
+                                if (clienteId != null && clienteId.equals(currentUserId)) {
+                                    String dataReserva = reservaSnapshot.child("DataReserva").getValue(String.class);
+                                    hasReserva[0] = true;
+                                    if (dataReserva != null) {
+                                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                        try {
+                                            Date reservaDate = sdf.parse(dataReserva);
+                                            long reservaTimeMillis = reservaDate.getTime();
 
-                                        long timeDifferenceMillis = currentTimeMillis - reservaTimeMillis;
-                                        long timeDifferenceHours = Math.abs(timeDifferenceMillis / (1000 * 60 * 60)); //Math.abs faz o modulo do valor para tornalo positivo para comparação
+                                            long currentTimeMillis = System.currentTimeMillis();
+                                            long timeDifferenceMillis = currentTimeMillis - reservaTimeMillis;
+                                            long timeDifferenceHours = Math.abs(timeDifferenceMillis / (1000 * 60 * 60));
 
-                                        if (timeDifferenceHours >= 0 && timeDifferenceHours <= 24) { //Só pode pedir 5h antes
-                                            hasReserva = true;
-                                            break;
+                                            if (timeDifferenceHours >= 0 && timeDifferenceHours <= 24) {
+                                                hora[0] = true;
+                                                break;
+                                            }
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
                                         }
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
                                     }
                                 }
                             }
+                        }
+                        if (hora[0] && hasReserva[0]) {
+                            // O cliente tem uma reserva válida
+                            Intent intent = new Intent(EcraPrincipal.this, Pedido.class);
+                            startActivity(intent);
+                        } else {
+                            if (!hasReserva[0]) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(EcraPrincipal.this);
+                                builder.setTitle("Sem reserva");
+                                builder.setMessage("Você precisa fazer uma reserva antes de fazer um pedido.");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                            if (hasReserva) {
-                                // Existe uma reserva dentro do intervalo de 24 horas
-                                Intent intent = new Intent(EcraPrincipal.this, Pedido.class);
-                                startActivity(intent);
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                                return;
                             } else {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(EcraPrincipal.this);
                                 builder.setTitle("Pedido não permitido");
@@ -113,19 +133,8 @@ public class EcraPrincipal extends AppCompatActivity {
                                 });
                                 AlertDialog dialog = builder.create();
                                 dialog.show();
+                                return;
                             }
-                        } else {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(EcraPrincipal.this);
-                            builder.setTitle("Sem reserva");
-                            builder.setMessage("Você precisa fazer uma reserva antes de fazer um pedido.");
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
                         }
                     }
                     @Override
@@ -173,7 +182,7 @@ public class EcraPrincipal extends AppCompatActivity {
                 }
 
                 if (hasRecentOrder) {
-                    // O usuário tem um pedido recente
+                    // O utilizador tem um pedido recente
                     Intent intent = new Intent(EcraPrincipal.this, AcompanharPedido.class);
                     startActivity(intent);
                 }else{
@@ -183,7 +192,6 @@ public class EcraPrincipal extends AppCompatActivity {
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            // Ação a ser executada quando o botão "OK" for clicado
                         }
                     });
                     AlertDialog dialog = builder.create();

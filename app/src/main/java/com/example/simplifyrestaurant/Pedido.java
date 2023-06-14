@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,6 +40,7 @@ public class Pedido extends AppCompatActivity {
     ArrayList<Item> list;
     ArrayList<Item> filteredList;
     Dialog mDialog;
+    private ArrayList<Item> allItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,56 +55,42 @@ public class Pedido extends AppCompatActivity {
         list = new ArrayList<>();
         myAdapter = new MyAdapter(this,list, btnFinalizar, Pedido.this);
         recyclerView.setAdapter(myAdapter);
-        searchEditText = findViewById(R.id.searchEditText);
+        TextView textViewPratoRefeicao = findViewById(R.id.textViewRefeicao);
+        TextView textViewBebida = findViewById(R.id.textViewBebida);
+        TextView textViewSobremesa = findViewById(R.id.textViewSobremesa);
 
-       // myAdapter.setBtnFinalizar(btnFinalizar);
 
-
-       /* LayoutInflater inflater = LayoutInflater.from(this);
-        View layout = inflater.inflate(R.layout.item, null);
-        Button buttonPopup = layout.findViewById(R.id.buttonPopup);*/
-
-       // mDialog = new Dialog(this);
-
-        /*buttonPopup.setOnClickListener(new View.OnClickListener() {
+        textViewPratoRefeicao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDialog.setContentView(R.layout.popup);
-                mDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                mDialog.show(); // Exibe o diálogo pop-up
-            }
-        });*/
-        searchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //String searchText = s.toString().toLowerCase();
-                //filterItems(searchText);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                String query = s.toString().toLowerCase();
-                filterItems(query);
+                filterItemsByCategory("Prato");
             }
         });
 
+        textViewBebida.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filterItemsByCategory("Bebida");
+            }
+        });
+
+        textViewSobremesa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filterItemsByCategory("Sobremesa");
+            }
+        });
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                //list.clear(); // Limpa a lista antes de adicionar os itens filtrados
+                allItems = new ArrayList<>();
                 for(DataSnapshot dataSnapshot : snapshot.getChildren()){
                     Item item = dataSnapshot.getValue(Item.class);
-                    list.add(item);
+                    allItems.add(item);
                 }
-                myAdapter.notifyDataSetChanged();
-
+                updateRecyclerView();
             }
 
             @Override
@@ -111,14 +99,18 @@ public class Pedido extends AppCompatActivity {
             }
         });
     }
-    private void filterItems(String searchText) {
-        filteredList = new ArrayList<>(); // Inicializa a lista filteredList
+    private void filterItemsByCategory(String category) {
+        list.clear(); // Limpa a lista antes de adicionar os itens filtrados
 
-        for (Item item : list) {
-            if (item.getNome().toLowerCase().contains(searchText)) {
-                filteredList.add(item);
+        for (Item item : allItems) {
+            if (item.getCategoria().equalsIgnoreCase(category)) {
+                list.add(item);
             }
         }
-        myAdapter.filterList(filteredList);
+        // Atualize o RecyclerView após filtrar os itens
+        updateRecyclerView();
+    }
+    private void updateRecyclerView() {
+        myAdapter.notifyDataSetChanged();
     }
 }

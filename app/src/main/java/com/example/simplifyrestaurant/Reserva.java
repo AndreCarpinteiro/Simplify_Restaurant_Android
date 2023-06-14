@@ -189,14 +189,11 @@ public class Reserva extends AppCompatActivity {
                             }
 
                             if (numReservas < 2) {
-                                // Faça o restante do seu código para realizar a reserva
                             } else {
                                 AlertDialog.Builder cxMsg = createDialogWithMessage("Número máximo de reservas atingido para o dia selecionado");
                                 cxMsg.show();
                             }
                         } else {
-                            // Nenhuma reserva encontrada para o dia selecionado
-                            // Faça o restante do seu código para realizar a reserva
                         }
                     }
 

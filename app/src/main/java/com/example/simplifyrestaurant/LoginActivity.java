@@ -3,16 +3,20 @@ package com.example.simplifyrestaurant;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.view.inputmethod.InputMethodManager;
+import android.view.MotionEvent;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -60,8 +64,18 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
+        View rootView = findViewById(R.id.nestedScrollView);//Vou buscar a raiz do layout
+
+        rootView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                return false;
+            }
+        });
+    }
     private void LoginUtilizador(View view){
         String email = edit_email.getText().toString();
         String senha = edit_senha.getText().toString();
