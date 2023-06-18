@@ -102,6 +102,29 @@ public class Pagamento extends AppCompatActivity {
             }
         });
 
+        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
+        itemsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Item> itemList = new ArrayList<>();
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Item item = dataSnapshot.getValue(Item.class);
+                    if (item != null && item.getUser().equals(userId)) {
+                        itemList.add(item);
+                    }
+                }
+                double valorTotal = calcularValorTotal(); // Obtém o valor total antes de gerar o PDF
+                generatePdf(itemList, valorTotal);
+                openPdf();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getApplicationContext(), "Erro ao obter os itens do Firebase", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         DatabaseReference pedidosRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
         pedidosRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -112,8 +135,6 @@ public class Pagamento extends AppCompatActivity {
                         dataSnapshot.getRef().removeValue(); // Remove o pedido relacionado ao utilizador
                     }
                 }
-                generatePdf();
-                openPdf();
             }
 
             @Override
@@ -121,29 +142,8 @@ public class Pagamento extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Erro ao obter os pedidos do Firebase", Toast.LENGTH_SHORT).show();
             }
         });
-
-        DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference().child("Items");
-        itemsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Item> itemList = new ArrayList<>();
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Item item = dataSnapshot.getValue(Item.class);
-                    if (item != null) {
-                        itemList.add(item);
-                    }
-                }
-                generatePdf();
-                openPdf();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getApplicationContext(), "Erro ao obter os itens do Firebase", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
-    private void generatePdf() {
+    private void generatePdf(List<Item> itemList, double valorTotal) {
         // Verifica as permissões de armazenamento
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -184,23 +184,39 @@ public class Pagamento extends AppCompatActivity {
         paint.setTextSize(30f);
         canvas.drawText("Informações do consumo:", x, y, paint);
         y += 50;
-        paint.setTextSize(30f);
-        canvas.drawText("Item 1:", x, y, paint);
-        y += 25;
-        paint.setTextSize(30f);
-        canvas.drawText("Descrição do item 1", x, y, paint);
-        y += 25;
-        paint.setTextSize(30f);
-        canvas.drawText("Item 2:", x, y, paint);
-        y += 25;
-        paint.setTextSize(30f);
-        canvas.drawText("Descrição do item 2", x, y, paint);
-        y += 50;
 
+        float lineHeight = 25f; // Altura da linha de texto
 
+        for (Item item : itemList) {
+            if (item.getNome() != null) {
+                paint.setTextSize(25f);
+
+                // Construir a string com a quantidade e o preço do item
+                String quantidadePreco = item.getQuantidade() + " x " + item.getPreco() + "€";
+
+                // Calcular a largura da string
+                float textWidth = paint.measureText(quantidadePreco);
+
+                // Ajustar a posição x com base no comprimento do nome do item
+                float itemTextWidth = paint.measureText(item.getNome());
+                float itemNameX = x;
+                float quantidadePrecoX = itemNameX + itemTextWidth + 20;
+
+                // Desenhar o nome do item com a quantidade e o preço ao lado
+                canvas.drawText(item.getNome(), itemNameX, y, paint);
+                canvas.drawText(quantidadePreco, quantidadePrecoX, y, paint);
+
+                y += lineHeight; // Ajustar a posição y para a próxima linha
+
+            }
+        }
+
+        // Obter o valor total
+
+        // Adicionar o valor total ao PDF
         paint.setTextSize(30f);
         y += 40;
-        canvas.drawText("Total: 100,00", x, y, paint);
+        canvas.drawText("Total: " + valorTotal + "€", x, y, paint);
         y += 30;
         paint.setTextSize(20f);
 
@@ -238,7 +254,7 @@ public class Pagamento extends AppCompatActivity {
     private void openPdf() {
         File pdfFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "consumo.pdf");
 
-        Uri uri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", pdfFile);
+        Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", pdfFile);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(uri, "application/pdf");
@@ -246,8 +262,13 @@ public class Pagamento extends AppCompatActivity {
 
         try {
             startActivity(intent);
+            // Redirecionar para a atividade principal após abrir o PDF
+            Intent mainIntent = new Intent(Pagamento.this, EcraPrincipal.class);
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(mainIntent);
+            finish(); // Finalizar a atividade atual (Pagamento)
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(getApplicationContext(), "Nenhum aplicativo para visualizar PDF encontrado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Nenhuma aplicação para visualizar PDF encontrada", Toast.LENGTH_SHORT).show();
         }
     }
     @Override
@@ -255,35 +276,35 @@ public class Pagamento extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                generatePdf();
+                //generatePdf();
             } else {
                 Toast.makeText(getApplicationContext(), "Permissão de armazenamento negada", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void calcularValorTotal() {
+    private double calcularValorTotal() {
         DatabaseReference pedidosRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        final double[] valorTotal = {0.0};
 
         pedidosRef.orderByChild("User").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                double valorTotal = 0.0;
-
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     ClassePedido pedido = dataSnapshot.getValue(ClassePedido.class);
                     if (pedido != null) {
                         String precoString = pedido.getPreco();
                         precoString = precoString.replace(",", ".");
                         double preco = Double.parseDouble(precoString);
-                        valorTotal += preco;
+                        valorTotal[0] += preco;
                     }
                 }
 
-                // Formata o valor com uma casa decimal a mais
+                // Formata o valor com duas casas decimais
                 DecimalFormat decimalFormat = new DecimalFormat("#0.00");
-                String valorTotalFormatado = decimalFormat.format(valorTotal);
+                String valorTotalFormatado = decimalFormat.format(valorTotal[0]);
 
                 TextView txtValorTotal = findViewById(R.id.txtValorPagar);
                 txtValorTotal.setText("Valor a pagar: " + valorTotalFormatado + "€");
@@ -294,5 +315,7 @@ public class Pagamento extends AppCompatActivity {
                 // Tratar erro ao acessar o banco de dados
             }
         });
+
+        return valorTotal[0];
     }
 }

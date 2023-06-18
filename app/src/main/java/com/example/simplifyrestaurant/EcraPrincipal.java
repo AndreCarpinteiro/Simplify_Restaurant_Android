@@ -75,7 +75,7 @@ public class EcraPrincipal extends AppCompatActivity {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
+                            Date currentDate = new Date();
                             for (DataSnapshot reservaSnapshot : snapshot.getChildren()) {
                                 String clienteId = reservaSnapshot.child("IdCliente").getValue(String.class);
 
@@ -86,15 +86,17 @@ public class EcraPrincipal extends AppCompatActivity {
                                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                                         try {
                                             Date reservaDate = sdf.parse(dataReserva);
-                                            long reservaTimeMillis = reservaDate.getTime();
+                                            if (reservaDate.after(currentDate)) { //Verifica se a reserva é no passado ou futuro
+                                                long reservaTimeMillis = reservaDate.getTime();
 
-                                            long currentTimeMillis = System.currentTimeMillis();
-                                            long timeDifferenceMillis = currentTimeMillis - reservaTimeMillis;
-                                            long timeDifferenceHours = Math.abs(timeDifferenceMillis / (1000 * 60 * 60));
+                                                long currentTimeMillis = System.currentTimeMillis();
+                                                long timeDifferenceMillis = currentTimeMillis - reservaTimeMillis;
+                                                long timeDifferenceHours = Math.abs(timeDifferenceMillis / (1000 * 60 * 60));
 
-                                            if (timeDifferenceHours >= 0 && timeDifferenceHours <= 24) {
-                                                hora[0] = true;
-                                                break;
+                                                if (timeDifferenceHours >= 0 && timeDifferenceHours <= 24) {
+                                                    hora[0] = true;
+                                                    break;
+                                                }
                                             }
                                         } catch (ParseException e) {
                                             e.printStackTrace();
