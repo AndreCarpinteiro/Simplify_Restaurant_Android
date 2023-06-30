@@ -49,6 +49,7 @@ public class Pagamento extends AppCompatActivity {
     ArrayList<Item> list;
     Item item;
     private List<HashMap<String, Object>> selectedItems;
+    final double[] valorTotal = {0.0};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,8 +115,8 @@ public class Pagamento extends AppCompatActivity {
                         itemList.add(item);
                     }
                 }
-                double valorTotal = calcularValorTotal(); // Obtém o valor total antes de gerar o PDF
-                generatePdf(itemList, valorTotal);
+
+                generatePdf(itemList);
                 openPdf();
             }
 
@@ -143,7 +144,7 @@ public class Pagamento extends AppCompatActivity {
             }
         });
     }
-    private void generatePdf(List<Item> itemList, double valorTotal) {
+    private void generatePdf(List<Item> itemList) {
         // Verifica as permissões de armazenamento
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -213,12 +214,14 @@ public class Pagamento extends AppCompatActivity {
 
         // Obter o valor total
 
-        // Adicionar o valor total ao PDF
+        double valorTotalDouble = valorTotal[0];
+
         paint.setTextSize(30f);
         y += 40;
-        canvas.drawText("Total: " + valorTotal + "€", x, y, paint);
+        DecimalFormat decimalFormat = new DecimalFormat("#0.00");
+        String valorTotalFormatado = decimalFormat.format(valorTotalDouble);
+        canvas.drawText("Total: " + valorTotalFormatado + "€", x, y, paint);
         y += 30;
-        paint.setTextSize(20f);
 
         // Desenhar a morada no fundo do PDF
         y += 25;
@@ -254,11 +257,11 @@ public class Pagamento extends AppCompatActivity {
     private void openPdf() {
         File pdfFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "consumo.pdf");
 
-        Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", pdfFile);
+        Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", pdfFile);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(uri, "application/pdf");
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         try {
             startActivity(intent);
@@ -287,8 +290,6 @@ public class Pagamento extends AppCompatActivity {
         DatabaseReference pedidosRef = FirebaseDatabase.getInstance().getReference().child("Pedidos");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        final double[] valorTotal = {0.0};
-
         pedidosRef.orderByChild("User").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -298,7 +299,9 @@ public class Pagamento extends AppCompatActivity {
                         String precoString = pedido.getPreco();
                         precoString = precoString.replace(",", ".");
                         double preco = Double.parseDouble(precoString);
-                        valorTotal[0] += preco;
+                        int quantidade = pedido.getQuantidade();
+                        double subtotal = preco * quantidade;
+                        valorTotal[0] += subtotal;
                     }
                 }
 
